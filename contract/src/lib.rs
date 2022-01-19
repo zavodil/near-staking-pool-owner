@@ -4,19 +4,22 @@ use near_sdk::collections::UnorderedMap;
 use near_sdk::json_types::{U128};
 
 const NO_DEPOSIT: Balance = 0;
-const UNSTAKE_ALL_GAS: Gas = Gas(100_000_000_000_000);
-const STAKING_POOL_READ_GAS: Gas = Gas(50_000_000_000_000);
+const UNSTAKE_ALL_GAS: Gas = Gas(30_000_000_000_000);
+const WITHDRAW_GAS: Gas = Gas(30_000_000_000_000);
+const STAKING_POOL_READ_GAS: Gas = Gas(20_000_000_000_000);
 const DISTRIBUTE_GAS: Gas = Gas(25_000_000_000_000);
 
 type EpochId = u64;
 
-/// Interface for a staking contract.
+/// Interface for a staking contract
 #[ext_contract(ext_staking_pool)]
 pub trait StakingPoolContract {
    /// Unstakes all staked balance
    fn unstake_all(&self);
    /// Returns the unstaked balance of the given account
    fn get_account_unstaked_balance(&self, account_id: AccountId) -> U128;
+   /// Withdraws the entire unstaked balance
+   fn withdraw_all(&self);
 }
 
 #[ext_contract(ext_self)]
@@ -91,24 +94,34 @@ impl Contract {
             .filter(|(k, _v)| *k <= current_epoch)
             .collect();
 
-      let unpaid_rewards: Balance =
-         unpaid_epochs
-         .iter()
-         .map(|(k, v)| {
+      if !unpaid_epochs.is_empty() {
+         let unpaid_rewards: Balance = unpaid_epochs.iter().map(|(k, v)| {
             self.unstaked_rewards.remove(k);
             v
-         })
-         .sum();
+         }).sum();
 
+         if unpaid_rewards > 0 {
+            log!("Unpaid rewards found: {}", unpaid_rewards);
 
-      if unpaid_rewards > 0 {
-         log!("Unpaid rewards found: {}", unpaid_rewards);
-         Promise::new(self.rewards_target_account_id.clone()).transfer(unpaid_rewards);
-         U128::from(unpaid_rewards)
+            ext_staking_pool::withdraw_all(
+               self.staking_pool_account_id.clone(),
+               NO_DEPOSIT,
+               WITHDRAW_GAS
+            )
+               .then(
+                  Promise::new(self.rewards_target_account_id.clone())
+                     .transfer(unpaid_rewards)
+               );
+
+            return U128::from(unpaid_rewards);
+         }
       }
-      else {
-         U128::from(0)
-      }
+
+      U128::from(0)
+   }
+
+   pub fn get_is_distribute_allowed(&self) -> bool {
+      self.last_epoch_height < env::epoch_height()
    }
 
    pub fn get_staking_pool(&self) -> AccountId {
@@ -119,6 +132,14 @@ impl Contract {
       self.rewards_target_account_id.clone()
    }
 
+   pub fn get_unpaid_rewards(&self, from_index: Option<u64>, limit: Option<u64>) -> Vec<(EpochId, U128)> {
+      unordered_map_pagination(&self.unstaked_rewards, from_index, limit)
+   }
+
+   pub fn get_current_epoch_id(&self) -> EpochId {
+      env::epoch_height()
+   }
+   
    #[private]
    pub fn set_staking_pool(&mut self, account_id: AccountId) {
       self.staking_pool_account_id = account_id;
@@ -127,14 +148,6 @@ impl Contract {
    #[private]
    pub fn set_rewards_target(&mut self, account_id: AccountId) {
       self.rewards_target_account_id = account_id;
-   }
-
-   pub fn get_unpaid_rewards(&self, from_index: Option<u64>, limit: Option<u64>) -> Vec<(EpochId, U128)> {
-      unordered_map_pagination(&self.unstaked_rewards, from_index, limit)
-   }
-
-   pub fn get_current_epoch_id(&self) -> EpochId {
-      env::epoch_height()
    }
 }
 

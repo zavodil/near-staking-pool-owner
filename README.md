@@ -16,7 +16,7 @@ near call $CONTRACT_ID new '{"staking_pool_account_id": "'$STAKING_POOL'", "rewa
 
 ###STAKE
 ```
-near call $STAKING_POOL deposit_and_stake '{}' --accountId $CONTRACT_ID --deposit 2 --gas 50000000000000
+near call $STAKING_POOL deposit_and_stake '{}' --accountId $CONTRACT_ID --deposit 5 --gas 50000000000000
 ```
 
 ###DISTRIBUTE
@@ -26,6 +26,7 @@ near call $CONTRACT_ID distribute '{}' --accountId $CONTRACT_ID --gas 2000000000
 
 ###CHECK
 ```
+near view $CONTRACT_ID get_is_distribute_allowed '{}'
 near view $CONTRACT_ID get_current_epoch_id '{}'
 near view $CONTRACT_ID get_unpaid_rewards '{}'
 ```

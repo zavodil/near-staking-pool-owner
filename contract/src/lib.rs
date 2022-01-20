@@ -5,9 +5,9 @@ use near_sdk::json_types::{U128};
 
 const NO_DEPOSIT: Balance = 0;
 const UNSTAKE_ALL_GAS: Gas = Gas(30_000_000_000_000);
+const STAKING_POOL_READ_GAS: Gas = Gas(25_000_000_000_000);
+const ON_DISTRIBUTE_GAS: Gas  = Gas(50_000_000_000_000);
 const WITHDRAW_GAS: Gas = Gas(30_000_000_000_000);
-const STAKING_POOL_READ_GAS: Gas = Gas(20_000_000_000_000);
-const DISTRIBUTE_GAS: Gas = Gas(25_000_000_000_000);
 
 type EpochId = u64;
 
@@ -76,7 +76,7 @@ impl Contract {
          ext_self::on_get_account_unstaked_balance(
             env::current_account_id(),
             NO_DEPOSIT,
-            DISTRIBUTE_GAS
+            ON_DISTRIBUTE_GAS
       ));
    }
 
@@ -120,7 +120,7 @@ impl Contract {
       U128::from(0)
    }
 
-   pub fn get_is_distribute_allowed(&self) -> bool {
+   pub fn get_is_distribution_allowed(&self) -> bool {
       self.last_epoch_height < env::epoch_height()
    }
 
@@ -139,7 +139,7 @@ impl Contract {
    pub fn get_current_epoch_id(&self) -> EpochId {
       env::epoch_height()
    }
-   
+
    #[private]
    pub fn set_staking_pool(&mut self, account_id: AccountId) {
       self.staking_pool_account_id = account_id;

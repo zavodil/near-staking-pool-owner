@@ -26,7 +26,16 @@ near call $CONTRACT_ID distribute '{}' --accountId $CONTRACT_ID --gas 2000000000
 
 ###CHECK
 ```
-near view $CONTRACT_ID get_is_distribute_allowed '{}'
+near view $CONTRACT_ID get_is_distribution_allowed '{}'
 near view $CONTRACT_ID get_current_epoch_id '{}'
 near view $CONTRACT_ID get_unpaid_rewards '{}'
+
+near view $STAKING_POOL get_account_unstaked_balance '{"account_id":"'$CONTRACT_ID'"}'
+near view $STAKING_POOL get_account '{"account_id":"'$CONTRACT_ID'"}'
 ```
+
+###GAS PROFILING
+```
+http post https://rpc.testnet.near.org method=tx params:='["54mmch7n5nWzLtDdXxr25QRTfYNNGb4HBV7oNTVEHWiU", "'$CONTRACT_ID'"]' jsonrpc=2.0 id=123
+```
+

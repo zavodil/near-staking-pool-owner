@@ -18,8 +18,8 @@ pub trait StakingPoolContract {
    fn unstake_all(&self);
    /// Returns the unstaked balance of the given account
    fn get_account_unstaked_balance(&self, account_id: AccountId) -> U128;
-   /// Withdraws the entire unstaked balance
-   fn withdraw_all(&self);
+   /// Withdraws the non staked balance for given account
+   fn withdraw(&self, amount: U128);
 }
 
 #[ext_contract(ext_self)]
@@ -103,7 +103,8 @@ impl Contract {
          if unpaid_rewards > 0 {
             log!("Unpaid rewards found: {}", unpaid_rewards);
 
-            ext_staking_pool::withdraw_all(
+            ext_staking_pool::withdraw(
+               U128::from(unpaid_rewards),
                self.staking_pool_account_id.clone(),
                NO_DEPOSIT,
                WITHDRAW_GAS

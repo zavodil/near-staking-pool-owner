@@ -5,7 +5,7 @@ Staking Pool Owner Proxy Contract
 
 ```
 export STAKING_POOL=staked.pool.f863973.m0
-export CONTRACT_ID=dev-1642550364694-97849682442466
+export CONTRACT_ID=dev-1643062986167-58132871434987
 export TARGET_ACCOUNT_ID=zavodil.testnet
 ```
 

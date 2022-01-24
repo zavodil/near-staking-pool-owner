@@ -27,14 +27,14 @@ pub trait StakingPoolContract {
 pub trait ExtContract {
    /* Callback from checking unstaked balance */
    fn on_get_account_unstaked_balance(&mut self, #[callback] unstaked_amount: U128) -> U128;
-   /*Callback on withdraw*/
+   /* Callback from staking rewards withdraw */
    fn on_withdraw(&mut self, unstaked_amount: U128);
 }
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct Contract {
-	staking_pool_account_id: AccountId,
+   staking_pool_account_id: AccountId,
    rewards_target_account_id: AccountId,
    last_epoch_height: EpochId,
 }
@@ -53,7 +53,7 @@ impl Contract {
    pub fn distribute(&mut self) -> PromiseOrValue<U128> {
       assert!(env::epoch_height() > self.last_epoch_height + NUM_EPOCHS_TO_UNLOCK, "ERR_TOO_EARLY");
 
-      return PromiseOrValue::Promise(
+      PromiseOrValue::Promise(
          ext_staking_pool::get_account_unstaked_balance(
             env::current_account_id(),
             self.staking_pool_account_id.clone(),
@@ -65,7 +65,7 @@ impl Contract {
                NO_DEPOSIT,
                ON_DISTRIBUTE_GAS,
             )
-         ));
+         ))
    }
 
    #[private]

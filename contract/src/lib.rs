@@ -51,7 +51,7 @@ pub trait StakingPoolContract {
 /// Interface for a staking contract
 #[ext_contract(ext_usn)]
 pub trait UsnContract {
-    fn buy(&mut self);
+    fn buy(&mut self, expected: Option<String>);
 }
 
 #[ext_contract(ext_self)]
@@ -259,12 +259,14 @@ impl Contract {
         self.available_rewards -= reward;
         self.last_reward_distribution = env::block_timestamp();
 
-        ext_usn::buy(self.usn_contract_id.clone(), reward, USN_BUY_GAS).then(ext_self::on_buy(
-            U128(reward),
-            env::current_account_id(),
-            NO_DEPOSIT,
-            ON_BUY_GAS,
-        ))
+        ext_usn::buy(None, self.usn_contract_id.clone(), reward, USN_BUY_GAS).then(
+            ext_self::on_buy(
+                U128(reward),
+                env::current_account_id(),
+                NO_DEPOSIT,
+                ON_BUY_GAS,
+            ),
+        )
     }
 
     #[private]

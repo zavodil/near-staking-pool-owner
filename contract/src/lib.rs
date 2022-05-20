@@ -84,6 +84,8 @@ pub struct Contract {
     #[serde(with = "u64_dec_format")]
     full_rewards_duration: Duration,
     farm_id: u64,
+    #[serde(with = "u128_dec_format")]
+    usn_distributed: Balance,
 }
 
 #[near_bindgen]
@@ -105,10 +107,51 @@ impl Contract {
             farm_duration: DEFAULT_FARM_DURATION,
             full_rewards_duration: FULL_REWARDS_DURATION,
             farm_id,
+            usn_distributed: 0,
         }
     }
 
-    pub fn get_info(&self) -> &Contract {
+    // #[private]
+    // #[init(ignore_state)]
+    // pub fn migrate() -> Self {
+    //     #[derive(BorshDeserialize)]
+    //     pub struct OldContract {
+    //         staking_pool_account_id: AccountId,
+    //         owner_id: AccountId,
+    //         usn_contract_id: AccountId,
+    //         rewards_received: Balance,
+    //         available_rewards: Balance,
+    //         last_reward_distribution: Timestamp,
+    //         farm_duration: Duration,
+    //         full_rewards_duration: Duration,
+    //         farm_id: u64,
+    //     }
+    //     let OldContract {
+    //         staking_pool_account_id,
+    //         owner_id,
+    //         usn_contract_id,
+    //         rewards_received,
+    //         available_rewards,
+    //         last_reward_distribution,
+    //         farm_duration,
+    //         full_rewards_duration,
+    //         farm_id,
+    //     } = env::state_read().unwrap();
+    //     Self {
+    //         staking_pool_account_id,
+    //         owner_id,
+    //         usn_contract_id,
+    //         rewards_received,
+    //         available_rewards,
+    //         last_reward_distribution,
+    //         farm_duration,
+    //         full_rewards_duration,
+    //         farm_id,
+    //         usn_distributed: 0,
+    //     }
+    // }
+
+    pub fn get_info(&self) -> &Self {
         self
     }
 
@@ -275,6 +318,7 @@ pub struct FarmingDetails {
 
 impl Contract {
     pub fn internal_distribute_usn(&mut self, usn_amount: Balance) -> Promise {
+        self.usn_distributed += usn_amount;
         ext_fungible_token::ft_transfer_call(
             self.staking_pool_account_id.clone(),
             usn_amount.into(),

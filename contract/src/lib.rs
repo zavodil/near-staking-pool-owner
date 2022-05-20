@@ -205,6 +205,7 @@ impl Contract {
     pub fn donate(&mut self) {
         let attached_deposit = env::attached_deposit();
         log!("Thank for you {} NEAR", attached_deposit);
+        self.rewards_received += attached_deposit;
         self.available_rewards += attached_deposit;
     }
 

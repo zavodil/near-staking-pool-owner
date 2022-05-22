@@ -230,6 +230,16 @@ impl Contract {
         }
     }
 
+    pub fn set_full_rewards_duration(&mut self, full_rewards_duration_sec: u32) {
+        self.assert_owner();
+        self.full_rewards_duration = u64::from(full_rewards_duration_sec) * 10u64.pow(9);
+    }
+
+    pub fn set_farm_duration(&mut self, farm_duration_sec: u32) {
+        self.assert_owner();
+        self.farm_duration = u64::from(farm_duration_sec) * 10u64.pow(9);
+    }
+
     pub fn get_near_reward_for_distribution(&self) -> U128 {
         let time_diff = env::block_timestamp() - self.last_reward_distribution;
         if time_diff >= self.full_rewards_duration {
@@ -334,6 +344,14 @@ impl Contract {
             ONE_YOCTO,
             FT_TRANSFER_CALL_ADD_FARM_GAS,
         )
+    }
+
+    pub fn assert_owner(&self) {
+        assert_eq!(
+            &self.owner_id,
+            &env::predecessor_account_id(),
+            "Not an owner!"
+        );
     }
 }
 

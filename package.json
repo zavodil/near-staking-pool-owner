@@ -3,16 +3,9 @@
 	"version": "0.1.0",
 	"license": "MIT",
 	"scripts": {
-		"build": "npm run build:contract && npm run build:web",
 		"build:contract": "node contract/compile.js",
-		"build:contract:debug": "node contract/compile.js --debug",
-		"dev:deploy:contract": "near dev-deploy",
-		"deploy:contract": "near deploy",
-		"build:contract:testnet": "export NODE_ENV=testnet && node contract/compile.js",
-		"deploy:contract:testnet": "export NODE_ENV=testnet && near deploy",
 		"dev:clear": "rm -r neardev",
-		"test": "export NODE_ENV=testnet && export CONTRACT_NAME=dev-1640966965154-54263632565336 && jest rest-api.test.js --useStderr --verbose false",
-		"test:1": "export NODE_ENV=testnet && export CONTRACT_NAME=dev-1640966965154-54263632565336 && jest rest-api.test.js -t 'Create Event' --useStderr --verbose false"
+		"test": "cargo run --example staking -- --nocapture"
 	},
 	"devDependencies": {
 		"@babel/core": "~7.12.3",

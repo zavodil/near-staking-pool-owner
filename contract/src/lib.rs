@@ -194,9 +194,12 @@ impl Contract {
         );
         self.rewards_received += unstaked_amount.0;
 
-        // Send rewards
-        for reward_receiver in &self.reward_receivers {
-            transfer(reward_receiver.0.clone(), reward_receiver.1.multiply(unstaked_amount.0));
+        if unstaked_amount.0 > 0 {
+            // Send rewards
+            for reward_receiver in &self.reward_receivers {
+                transfer(reward_receiver.0.clone(), reward_receiver.1.multiply(unstaked_amount.0));
+            }
+            self.last_reward_distribution = env::block_timestamp();
         }
 
         if unstake_all {

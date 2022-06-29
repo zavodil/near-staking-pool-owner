@@ -17,7 +17,7 @@ const CONTRACT_WASM_FILEPATH: &str = "./../out/main.wasm";
 const POOL_WASM_FILEPATH: &str = "./../out/staking_pool.wasm";
 
 // wait ~ 4+ epoch
-const DELTA_HEIGHT: u64 = 2100;
+const DELTA_HEIGHT: u64 = 2500;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(crate = "near_sdk::serde")]
@@ -202,12 +202,6 @@ async fn main() -> anyhow::Result<()> {
         .await?
         .json::<Balance>()?;
     println!("rewards_received: {}", rewards_received);
-
-    println!("1: {}", reward_1.view_account(&worker).await?.balance);
-    println!("1: {}", rewards_received / 100 * REWARD_1_FEE);
-
-    println!("2: {}", reward_2.view_account(&worker).await?.balance);
-    println!("2: {}", rewards_received / 100 * REWARD_2_FEE);
 
     almost_eq(reward_1.view_account(&worker).await?.balance - init_balance_1, rewards_received / 100 * REWARD_1_FEE, 3);
     almost_eq(reward_2.view_account(&worker).await?.balance - init_balance_2, rewards_received / 100 * REWARD_2_FEE, 3);

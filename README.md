@@ -29,6 +29,11 @@ near call $CONTRACT_ID reset_reward_receivers '{"reward_receivers": [["account_1
 near call $CONTRACT_ID withdraw '{}' --accountId $CONTRACT_ID --gas 200000000000000
 ```
 
+### Build contract
+```
+yarn && yarn build:contract
+```
+
 ### Run tests
 ```
 cd contract

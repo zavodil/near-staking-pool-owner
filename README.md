@@ -39,7 +39,7 @@ Additional info
 ====
 
 - How to sun a NEAR node: [NEAR Validator Bootcamp](https://near-nodes.io/validator/validator-bootcamp)
-- How to interact with the NEAR blockchain [NEAR CLI](https://github.com/near/near-cli)
+- How to interact with the NEAR blockchain: [NEAR CLI](https://github.com/near/near-cli)
 - [NEAR Examples](https://near.dev)
 
 Risks

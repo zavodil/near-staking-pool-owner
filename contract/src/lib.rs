@@ -118,21 +118,13 @@ impl Contract {
         }
     }
 
+    // owner method to update reward_receivers
     pub fn reset_reward_receivers(&mut self, reward_receivers: Vec<(AccountId, RewardFeeFraction)>) {
         self.assert_owner();
         assert_reward_receivers(&reward_receivers);
 
         self.reward_receivers = reward_receivers;
     }
-
-    pub fn get_info(&self) -> &Self {
-        self
-    }
-
-    pub fn get_rewards_received(&self) -> Balance {
-        self.rewards_received
-    }
-
 
     // public method to distribute rewards
     pub fn withdraw(&mut self) -> Promise {
@@ -207,19 +199,22 @@ impl Contract {
         }
     }
 
-    #[payable]
-    pub fn donate(&mut self) {
-        log!("Thank you for your {} yNEAR", env::attached_deposit())
-    }
     pub fn get_current_env_data(&self) -> (u64, u64) {
         let now = env::block_timestamp();
         let eh = env::epoch_height();
         (now, eh)
     }
 
-
     pub fn get_staking_pool(&self) -> AccountId {
         self.staking_pool_account_id.clone()
+    }
+
+    pub fn get_info(&self) -> &Self {
+        self
+    }
+
+    pub fn get_rewards_received(&self) -> Balance {
+        self.rewards_received
     }
 }
 
@@ -230,6 +225,23 @@ impl Contract {
             &env::predecessor_account_id(),
             "Not an owner!"
         );
+    }
+}
+
+fn assert_reward_receivers (reward_receivers: &Vec<(AccountId, RewardFeeFraction)>){
+    let mut total_fee: RewardFeeFraction = RewardFeeFraction::zero_fee();
+    for reward_receiver in reward_receivers {
+        reward_receiver.1.assert_valid();
+        total_fee = total_fee.add(reward_receiver.1.clone());
+    }
+    total_fee.assert_valid();
+    assert_eq!(total_fee.numerator, total_fee.denominator, "ERR_ILLEGAL_REWARD_RECEIVERS");
+}
+
+fn transfer(account: AccountId, amount: Balance) {
+    if amount > 0 {
+        log!("Sending {} to {}", amount, account);
+        Promise::new(account).transfer(amount);
     }
 }
 
@@ -278,22 +290,5 @@ pub(crate) mod u64_dec_format {
         String::deserialize(deserializer)?
             .parse()
             .map_err(de::Error::custom)
-    }
-}
-
-fn assert_reward_receivers (reward_receivers: &Vec<(AccountId, RewardFeeFraction)>){
-    let mut total_fee: RewardFeeFraction = RewardFeeFraction::zero_fee();
-    for reward_receiver in reward_receivers {
-        reward_receiver.1.assert_valid();
-        total_fee = total_fee.add(reward_receiver.1.clone());
-    }
-    total_fee.assert_valid();
-    assert_eq!(total_fee.numerator, total_fee.denominator, "ERR_ILLEGAL_REWARD_RECEIVERS");
-}
-
-fn transfer(account: AccountId, amount: Balance) {
-    if amount > 0 {
-        log!("Sending {} to {}", amount, account);
-        Promise::new(account).transfer(amount);
     }
 }

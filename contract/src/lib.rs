@@ -6,6 +6,8 @@ use near_sdk::{
     Balance, Gas, PanicOnDefault, Promise, Timestamp, EpochHeight
 };
 
+mod web4;
+
 const STAKING_POOL_PING_GAS: Gas = Gas(50_000_000_000_000);
 const STAKING_POOL_READ_GAS: Gas = Gas(5_000_000_000_000);
 const ON_DISTRIBUTE_GAS: Gas = Gas(120_000_000_000_000);
@@ -60,6 +62,8 @@ pub struct Contract {
     rewards_received: Balance,
     #[serde(with = "u64_dec_format")]
     last_reward_distribution: Timestamp,
+
+    web4_ipfs_hash: Option<String>,
 }
 
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Clone)]
@@ -112,9 +116,10 @@ impl Contract {
             staking_pool_account_id,
             owner_id,
             reward_receivers,
-            next_distribution_epoch: env::epoch_height() + NUM_EPOCHS_TO_UNLOCK,
+            next_distribution_epoch: env::epoch_height(),
             rewards_received: 0,
             last_reward_distribution: 0,
+            web4_ipfs_hash: None,
         }
     }
 
@@ -124,6 +129,11 @@ impl Contract {
         assert_reward_receivers(&reward_receivers);
 
         self.reward_receivers = reward_receivers;
+    }
+
+    pub fn reset_next_distribution_epoch(&mut self) {
+        self.assert_owner();
+        self.next_distribution_epoch = env::epoch_height();
     }
 
     // public method to distribute rewards
@@ -146,6 +156,7 @@ impl Contract {
     #[private]
     pub fn on_get_account(&mut self, #[callback] account: StakingPoolAccount) {
         let unstake_all = account.staked_balance.0 > 0;
+        self.next_distribution_epoch = env::epoch_height() + NUM_EPOCHS_TO_UNLOCK;
         if account.unstaked_balance.0 > 0 {
             if account.can_withdraw {
                 log!(
